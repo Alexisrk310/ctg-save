@@ -17,7 +17,7 @@ interface VideoCardProps {
 }
 
 export const VideoCard = ({ metadata, onDownload }: VideoCardProps) => {
-  const [tab, setTab] = React.useState<'video' | 'audio'>('video');
+  const [tab, setTab] = React.useState<'video' | 'muted' | 'audio'>('video');
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -113,21 +113,34 @@ export const VideoCard = ({ metadata, onDownload }: VideoCardProps) => {
                 <button
                   onClick={() => setTab('video')}
                   className={cn(
-                    "px-8 py-2.5 rounded-full text-[11px] font-black uppercase transition-all flex items-center gap-2.5",
+                    "px-6 py-2 rounded-full text-[10px] font-black uppercase transition-all flex items-center gap-2",
                     tab === 'video' ? "bg-white text-black shadow-xl scale-105" : "text-white/30 hover:text-white"
                   )}
                 >
-                  <Film size={14} />
+                  <Film size={12} />
                   Video
+                </button>
+                <button
+                  onClick={() => setTab('muted')}
+                  className={cn(
+                    "px-6 py-2 rounded-full text-[10px] font-black uppercase transition-all flex items-center gap-2",
+                    tab === 'muted' ? "bg-white text-black shadow-xl scale-105" : "text-white/30 hover:text-white"
+                  )}
+                >
+                  <div className="relative">
+                    <Film size={12} />
+                    <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-red-500 rounded-full border border-black" />
+                  </div>
+                  Mudo
                 </button>
                 <button
                   onClick={() => setTab('audio')}
                   className={cn(
-                    "px-8 py-2.5 rounded-full text-[11px] font-black uppercase transition-all flex items-center gap-2.5",
+                    "px-6 py-2 rounded-full text-[10px] font-black uppercase transition-all flex items-center gap-2",
                     tab === 'audio' ? "bg-white text-black shadow-xl scale-105" : "text-white/30 hover:text-white"
                   )}
                 >
-                  <Music size={14} />
+                  <Music size={12} />
                   Audio
                 </button>
               </div>
@@ -136,7 +149,11 @@ export const VideoCard = ({ metadata, onDownload }: VideoCardProps) => {
             <div className="space-y-4 overflow-y-auto max-h-[400px] pr-3 custom-scrollbar">
               <AnimatePresence mode="popLayout">
                 {metadata.formats
-                  .filter(f => tab === 'video' ? (f.hasVideo) : (!f.hasVideo && f.hasAudio))
+                  .filter(f => {
+                    if (tab === 'video') return f.hasVideo && f.hasAudio;
+                    if (tab === 'muted') return f.hasVideo && !f.hasAudio;
+                    return !f.hasVideo && f.hasAudio;
+                  })
                   .map((format, idx) => (
                     <motion.button
                       key={format.formatId}
@@ -150,9 +167,11 @@ export const VideoCard = ({ metadata, onDownload }: VideoCardProps) => {
                       <div className="flex items-center gap-5">
                         <div className={cn(
                           "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:rotate-[360deg]",
-                          tab === 'video' ? "bg-primary/10 text-primary shadow-[0_0_15px_rgba(206,17,38,0.1)]" : "bg-secondary/10 text-secondary shadow-[0_0_15px_rgba(252,209,22,0.1)]"
+                          tab === 'video' ? "bg-primary/10 text-primary shadow-[0_0_15px_rgba(206,17,38,0.1)]" : 
+                          tab === 'muted' ? "bg-red-500/10 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.1)]" :
+                          "bg-secondary/10 text-secondary shadow-[0_0_15px_rgba(252,209,22,0.1)]"
                         )}>
-                          {tab === 'video' ? <Film size={22} /> : <Music size={22} />}
+                          {(tab === 'video' || tab === 'muted') ? <Film size={22} /> : <Music size={22} />}
                         </div>
                         <div className="text-left">
                           <div className="flex items-center gap-3 mb-1">

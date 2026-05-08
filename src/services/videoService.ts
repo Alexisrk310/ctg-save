@@ -54,6 +54,19 @@ export class VideoService {
         return acc;
       }, []);
 
+      // Add a synthetic MP3 format if there is at least one audio format
+      const audioAvailable = uniqueFormats.some(f => f.hasAudio);
+      if (audioAvailable) {
+        uniqueFormats.push({
+          formatId: 'bestaudio-mp3',
+          extension: 'mp3',
+          quality: '320kbps (Convert)',
+          url: url, // Use the original URL for extraction
+          hasVideo: false,
+          hasAudio: true,
+        });
+      }
+
       return {
         id: data.id,
         title: data.title,

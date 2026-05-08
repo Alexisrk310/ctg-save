@@ -1,13 +1,54 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
+import { spawn } from 'child_process';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const url = searchParams.get('url');
   const filename = searchParams.get('filename') || 'video.mp4';
+  const isMp3 = filename.toLowerCase().endsWith('.mp3');
 
   if (!url) {
     return NextResponse.json({ error: 'Missing URL' }, { status: 400 });
+  }
+
+  if (isMp3) {
+    try {
+      // Stream directly from yt-dlp for MP3 conversion
+      const ytProcess = spawn('yt-dlp', [
+        '-x',
+        '--audio-format', 'mp3',
+        '--audio-quality', '0',
+        '--no-playlist',
+        '--no-warnings',
+        '-o', '-',
+        url
+      ]);
+
+      const stream = new ReadableStream({
+        start(controller) {
+          ytProcess.stdout.on('data', (chunk) => controller.enqueue(chunk));
+          ytProcess.stdout.on('end', () => controller.close());
+          ytProcess.stdout.on('error', (err) => controller.error(err));
+          ytProcess.on('close', (code) => {
+            if (code !== 0) console.error(`yt-dlp process exited with code ${code}`);
+          });
+        },
+        cancel() {
+          ytProcess.kill();
+        }
+      });
+
+      return new NextResponse(stream, {
+        headers: {
+          'Content-Type': 'audio/mpeg',
+          'Content-Disposition': `attachment; filename="${encodeURIComponent(filename)}"`,
+        }
+      });
+    } catch (error: any) {
+      console.error('MP3 extraction error:', error);
+      return NextResponse.json({ error: 'Failed to extract MP3' }, { status: 500 });
+    }
   }
 
   try {
@@ -36,7 +77,7 @@ export async function GET(req: NextRequest) {
       headers.set('Content-Length', String(contentLength));
     }
 
-    // @ts-ignore - response.data is a readable stream in Node, but Next.js expects a BodyInit
+    // @ts-ignore - response.data is a readable stream in Node
     return new NextResponse(response.data, {
       headers,
     });
