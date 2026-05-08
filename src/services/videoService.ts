@@ -78,9 +78,21 @@ export class VideoService {
         formats: uniqueFormats,
         platform: platform !== 'unknown' ? platform : 'youtube',
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching video info:', error);
-      throw new Error('Failed to fetch video information. Please check the URL.');
+      const message = error.message || '';
+      
+      if (message.includes('not found') || message.includes('404')) {
+        throw new Error('Video no encontrado. Verifica que el enlace sea correcto y público.');
+      }
+      if (message.includes('invalid url') || message.includes('not a valid URL')) {
+        throw new Error('El enlace proporcionado no es válido.');
+      }
+      if (message.includes('Sign in to confirm your age')) {
+        throw new Error('Este video requiere inicio de sesión (restricción de edad) y no puede ser descargado.');
+      }
+      
+      throw new Error('No se pudo obtener la información del video. Inténtalo de nuevo más tarde.');
     }
   }
 }

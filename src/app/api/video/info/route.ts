@@ -15,8 +15,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(info);
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Invalid URL provided.' }, { status: 400 });
+      return NextResponse.json({ error: 'El enlace proporcionado no es una URL válida.' }, { status: 400 });
     }
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    
+    // Distinguish between user errors and internal errors
+    const isUserError = error.message.includes('enlace') || 
+                       error.message.includes('encontrado') || 
+                       error.message.includes('válido') ||
+                       error.message.includes('restricción');
+
+    return NextResponse.json(
+      { error: error.message || 'Error interno del servidor' }, 
+      { status: isUserError ? 400 : 500 }
+    );
   }
 }
