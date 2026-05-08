@@ -20,14 +20,22 @@ ENV PATH="$DENO_INSTALL/bin:$PATH"
 
 WORKDIR /app
 
-# Dependencies
+# Install dependencies in base stage for dev use
 COPY package*.json ./
 RUN npm install
 
-# Build
+# Build stage
+FROM base AS builder
 COPY . .
 RUN npm run build
 
-# Runtime
+# Final runtime stage
+FROM base AS runner
+WORKDIR /app
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/next.config.ts ./
+
 EXPOSE 3000
 CMD ["npm", "start"]
