@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Hero } from '@/components/Hero';
-import { Features } from '@/components/Features';
 import { VideoCard } from '@/components/VideoCard';
 import { VideoMetadata, VideoFormat } from '@/types/video';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -98,9 +97,7 @@ export default function Home() {
         </AnimatePresence>
       </div>
 
-      <div className="border-t border-white/5 bg-black/20">
-        <Features />
-      </div>
+      {/* Features removed as requested */}
 
       {/* Subtle Footer Decorations */}
       <div className="fixed bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
