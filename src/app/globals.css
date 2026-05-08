@@ -30,14 +30,22 @@
 :root {
   --background: #050505;
   --foreground: #ffffff;
-  --glass-bg: rgba(10, 10, 10, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(10, 10, 10, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  
+  /* Cartagena Flag - Premium Palette */
   --ctg-red: #ce1126;
   --ctg-yellow: #fcd116;
   --ctg-green: #009b3a;
+  
   --primary: var(--ctg-red);
   --secondary: var(--ctg-yellow);
   --accent: var(--ctg-green);
+
+  /* New Glass Variants */
+  --glass-red: rgba(206, 17, 38, 0.05);
+  --glass-yellow: rgba(252, 209, 22, 0.05);
+  --glass-green: rgba(0, 155, 58, 0.05);
 }
 
 body {
