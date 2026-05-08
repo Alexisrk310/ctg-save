@@ -63,7 +63,7 @@ export default function Home() {
       <Toaster position="bottom-right" theme="dark" />
       <Navbar />
       
-      <Hero onDownload={handleFetchInfo} />
+      <Hero onDownload={handleFetchInfo} isLoading={loading} />
 
 
       <div ref={resultsRef} className="container mx-auto px-4 pb-24 scroll-mt-24">

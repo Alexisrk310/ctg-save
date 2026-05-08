@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, Link as LinkIcon, Sparkles } from 'lucide-react';
+import { Download, Link as LinkIcon, Loader2 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -10,12 +10,12 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const Hero = ({ onDownload }: { onDownload: (url: string) => void }) => {
+export const Hero = ({ onDownload, isLoading }: { onDownload: (url: string) => void, isLoading: boolean }) => {
   const [url, setUrl] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (url) onDownload(url);
+    if (url && !isLoading) onDownload(url);
   };
 
   return (
@@ -48,29 +48,39 @@ export const Hero = ({ onDownload }: { onDownload: (url: string) => void }) => {
           
           <div className="relative flex items-center bg-black border border-white/10 rounded-[1.8rem] p-2 pr-3 shadow-2xl">
             <div className="pl-4 text-white/30">
-              <LinkIcon size={20} />
+              {isLoading ? <Loader2 className="animate-spin" size={20} /> : <LinkIcon size={20} />}
             </div>
             
             <input
               type="text"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="Pega el enlace de YouTube aquí..."
-              className="w-full bg-transparent border-none outline-none px-4 py-4 text-white text-lg placeholder:text-white/20"
+              disabled={isLoading}
+              placeholder={isLoading ? "Buscando información..." : "Pega el enlace de YouTube aquí..."}
+              className="w-full bg-transparent border-none outline-none px-4 py-4 text-white text-lg placeholder:text-white/20 disabled:opacity-50"
             />
             
             <button
               type="submit"
-              disabled={!url}
+              disabled={!url || isLoading}
               className={cn(
-                "flex items-center gap-2 px-8 py-3.5 rounded-2xl font-bold transition-all duration-300",
-                url 
+                "flex items-center gap-2 px-8 py-3.5 rounded-2xl font-bold transition-all duration-300 min-w-[160px] justify-center",
+                url && !isLoading
                   ? "premium-gradient text-white shadow-[0_0_20px_rgba(0,112,243,0.4)] hover:scale-[1.02] active:scale-[0.98]" 
                   : "bg-white/5 text-white/20 cursor-not-allowed"
               )}
             >
-              <Download size={20} />
-              <span>Descargar</span>
+              {isLoading ? (
+                <>
+                  <Loader2 size={20} className="animate-spin" />
+                  <span>Buscando...</span>
+                </>
+              ) : (
+                <>
+                  <Download size={20} />
+                  <span>Descargar</span>
+                </>
+              )}
             </button>
           </div>
         </form>
