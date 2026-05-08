@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { VideoMetadata, VideoFormat } from '@/types/video';
 import { Play, Clock, Eye, Download, Music, Film } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
