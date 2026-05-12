@@ -15,15 +15,22 @@ export async function GET(req: NextRequest) {
   if (isMp3) {
     try {
       // Stream directly from yt-dlp for MP3 conversion
-      const ytProcess = spawn('yt-dlp', [
+      const ytArgs = [
         '-x',
         '--audio-format', 'mp3',
         '--audio-quality', '0',
         '--no-playlist',
         '--no-warnings',
-        '-o', '-',
-        url
-      ]);
+      ];
+      
+      const fs = require('fs');
+      if (fs.existsSync('./cookies.txt')) {
+        ytArgs.push('--cookies', './cookies.txt');
+      }
+      
+      ytArgs.push('-o', '-', url);
+
+      const ytProcess = spawn('yt-dlp', ytArgs);
 
       const stream = new ReadableStream({
         start(controller) {

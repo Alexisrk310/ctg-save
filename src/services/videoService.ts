@@ -13,7 +13,7 @@ export class VideoService {
     try {
       const platform = detectPlatform(url);
       
-      const output = await youtubedl(url, {
+      const options: any = {
         dumpSingleJson: true,
         noCheckCertificates: true,
         noWarnings: true,
@@ -21,7 +21,13 @@ export class VideoService {
           'referer:youtube.com',
           'user-agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         ],
-      });
+      };
+
+      if (fs.existsSync('./cookies.txt')) {
+        options.cookies = './cookies.txt';
+      }
+
+      const output = await youtubedl(url, options);
 
       const data = output as any;
       const formats: VideoFormat[] = data.formats
