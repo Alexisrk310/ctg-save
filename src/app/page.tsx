@@ -23,10 +23,14 @@ export default function Home() {
     }
   }, [metadata]);
 
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const handleFetchInfo = async (url: string) => {
     setLoading(true);
     setMetadata(null);
-    
+
     try {
       const response = await axios.post('/api/video/info', { url });
       setMetadata(response.data);
@@ -44,12 +48,12 @@ export default function Home() {
       toast.error('No se pudo encontrar la URL de descarga para este formato.');
       return;
     }
-    
+
     toast.info(`Iniciando descarga de "${metadata.title}" (${format.quality})...`);
-    
+
     const filename = `${metadata.title}.${format.extension}`.replace(/[<>:"/\\|?*]/g, '_');
     const downloadUrl = `/api/video/download?url=${encodeURIComponent(format.url)}&filename=${encodeURIComponent(filename)}`;
-    
+
     const a = document.createElement('a');
     a.href = downloadUrl;
     a.download = filename;
@@ -62,7 +66,7 @@ export default function Home() {
     <main className="min-h-screen bg-background selection:bg-primary selection:text-white">
       <Toaster position="bottom-right" theme="dark" />
       <Navbar />
-      
+
       <Hero onDownload={handleFetchInfo} isLoading={loading} />
 
 
@@ -88,9 +92,9 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: 'spring', damping: 20, stiffness: 100 }}
             >
-              <VideoCard 
-                metadata={metadata} 
-                onDownload={handleDownload} 
+              <VideoCard
+                metadata={metadata}
+                onDownload={handleDownload}
               />
             </motion.div>
           )}

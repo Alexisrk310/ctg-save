@@ -30,7 +30,7 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen bg-background selection:bg-primary selection:text-white">
       <Navbar />
-      
+
       <section className="pt-40 pb-24 px-4 overflow-hidden">
         <div className="container mx-auto max-w-5xl">
           <motion.div
@@ -38,14 +38,12 @@ export default function AboutPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-20"
           >
-            <span className="px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.3em] mb-6 inline-block">
-              Nuestra Historia
-            </span>
+
             <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-8 leading-tight">
               Diseñado para los que <br /> <span className="premium-text-gradient">valoran su tiempo.</span>
             </h1>
             <p className="text-xl text-white/50 max-w-3xl mx-auto leading-relaxed">
-              CTGSave nació de una necesidad simple: descargar contenido multimedia sin lidiar con 
+              CTGSave nació de una necesidad simple: descargar contenido multimedia sin lidiar con
               anuncios engañosos, esperas innecesarias o interfaces de hace una década.
             </p>
           </motion.div>
@@ -77,15 +75,15 @@ export default function AboutPage() {
             className="glass rounded-[3rem] p-12 md:p-20 text-center relative overflow-hidden border border-white/10"
           >
             <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/10 via-transparent to-accent/5 pointer-events-none" />
-            
+
             <div className="relative z-10">
               <h2 className="text-3xl md:text-4xl font-black mb-8">El futuro de CTGSave</h2>
               <p className="text-lg text-white/60 max-w-2xl mx-auto mb-12">
-                Estamos trabajando constantemente para añadir soporte a más plataformas y mejorar 
-                la calidad de procesamiento. Nuestra meta es ser la herramienta definitiva para 
+                Estamos trabajando constantemente para añadir soporte a más plataformas y mejorar
+                la calidad de procesamiento. Nuestra meta es ser la herramienta definitiva para
                 salvaguardar tus recuerdos digitales.
               </p>
-              
+
               <div className="flex flex-wrap justify-center gap-12 text-white/20">
                 <div className="flex items-center gap-3">
                   <Coffee size={20} />

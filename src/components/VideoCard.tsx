@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { VideoMetadata, VideoFormat } from '@/types/video';
-import { Play, Clock, Eye, Download, Music, Film } from 'lucide-react';
+import { Download, Music, Film, Eye, Clock, Sparkles } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -31,104 +31,168 @@ export const VideoCard = ({ metadata, onDownload }: VideoCardProps) => {
     return views.toString();
   };
 
+  const tabConfig = {
+    video: { color: '#ce1126', label: 'Video', icon: Film, bg: 'rgba(206,17,38,0.15)', border: 'rgba(206,17,38,0.4)' },
+    muted: { color: '#fcd116', label: 'Mudo', icon: Film, bg: 'rgba(252,209,22,0.12)', border: 'rgba(252,209,22,0.4)' },
+    audio: { color: '#009b3a', label: 'Audio', icon: Music, bg: 'rgba(0,155,58,0.15)', border: 'rgba(0,155,58,0.4)' },
+  };
+
+  const currentTab = tabConfig[tab];
+
+  // Determine quality tier color
+  const getQualityColor = (quality: string) => {
+    if (quality.includes('1080') || quality.includes('1440') || quality.includes('2160') || quality.includes('4K'))
+      return { accent: '#ce1126', bg: 'rgba(206,17,38,0.12)', label: 'HD+' };
+    if (quality.includes('720'))
+      return { accent: '#fcd116', bg: 'rgba(252,209,22,0.10)', label: 'HD' };
+    return { accent: '#009b3a', bg: 'rgba(0,155,58,0.10)', label: 'SD' };
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-4xl mx-auto mt-12 relative"
+      initial={{ opacity: 0, scale: 0.95, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ type: 'spring', damping: 25, stiffness: 120 }}
+      className="w-full max-w-4xl mx-auto mt-8 relative"
     >
-      {/* Background Decorative Glows */}
-      <div className="absolute -top-10 -left-10 w-40 h-40 bg-ctg-red/20 blur-[80px] rounded-full" />
-      <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-ctg-green/20 blur-[80px] rounded-full" />
 
-      <div className="relative glass rounded-[2.5rem] overflow-hidden border border-white/5 shadow-2xl">
-        {/* Cartagena Flag Top Accent */}
-        <div className="h-1.5 w-full flex">
-          <div className="flex-1 bg-ctg-red" />
-          <div className="flex-1 bg-ctg-yellow" />
-          <div className="flex-1 bg-ctg-green" />
-        </div>
+      {/* Main card */}
+      <div className="relative rounded-[2rem] p-6 overflow-hidden" style={{ background: 'rgba(8,8,8,0.95)', backdropFilter: 'blur(16px)' }}>
+        {/* Inner ambient glow — top left */}
+        <div
+          className="absolute top-0 left-0 w-72 h-72 rounded-full pointer-events-none"
+          style={{
+            background: `radial-gradient(circle, ${currentTab.color}20 0%, transparent 70%)`,
+            filter: 'blur(60px)',
+            transition: 'background 0.5s ease',
+          }}
+        />
 
-        <div className="p-8 md:p-10 flex flex-col md:flex-row gap-10">
-          {/* Visual Side */}
-          <div className="w-full md:w-72 shrink-0 space-y-6">
-            <div className="relative group rounded-3xl overflow-hidden border border-white/10 shadow-2xl aspect-video bg-black/40">
+        <div className="relative z-10 flex flex-col md:flex-row gap-8">
+          {/* Sidebar — Thumbnail & Stats */}
+          <div className="w-full md:w-64 flex flex-col gap-4">
+            {/* Thumbnail */}
+            <div className="relative group rounded-2xl overflow-hidden shadow-2xl aspect-video"
+              style={{ border: `1px solid ${currentTab.color}30` }}
+            >
               <img
                 src={metadata.thumbnail}
                 alt={metadata.title}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="absolute bottom-3 right-3 px-3 py-1.5 bg-black/80 backdrop-blur-md rounded-xl text-[10px] font-black text-white border border-white/10">
+              {/* Overlay gradient */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+              {/* Duration badge */}
+              <div className="absolute bottom-2 right-2 px-2.5 py-1 rounded-lg text-[10px] font-black text-white flex items-center gap-1"
+                style={{ background: 'rgba(0,0,0,0.85)', border: `1px solid ${currentTab.color}40` }}
+              >
+                <Clock size={10} style={{ color: currentTab.color }} />
                 {formatDuration(metadata.duration)}
               </div>
+
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="px-4 py-3 rounded-2xl bg-white/[0.03] border border-white/5 flex flex-col items-center">
-                <span className="text-[9px] uppercase font-black text-white/20 tracking-widest mb-1">Vistas</span>
-                <span className="text-sm font-bold text-white">{formatViews(metadata.views)}</span>
-              </div>
-              <div className="px-4 py-3 rounded-2xl bg-white/[0.03] border border-white/5 flex flex-col items-center">
-                <span className="text-[9px] uppercase font-black text-white/20 tracking-widest mb-1">Duración</span>
-                <span className="text-sm font-bold text-white">{formatDuration(metadata.duration)}</span>
-              </div>
+            {/* Stats */}
+            <div className="grid grid-cols-2 gap-2">
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                className="px-3 py-2.5 rounded-xl transition-all"
+                style={{
+                  background: 'rgba(206,17,38,0.06)',
+                  border: '1px solid rgba(206,17,38,0.15)',
+                }}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Eye size={10} style={{ color: '#ce1126' }} />
+                  <p className="text-[8px] uppercase font-black" style={{ color: 'rgba(206,17,38,0.6)' }}>Vistas</p>
+                </div>
+                <p className="text-sm font-bold text-white">{formatViews(metadata.views)}</p>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                className="px-3 py-2.5 rounded-xl transition-all"
+                style={{
+                  background: 'rgba(0,155,58,0.06)',
+                  border: '1px solid rgba(0,155,58,0.15)',
+                }}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Clock size={10} style={{ color: '#009b3a' }} />
+                  <p className="text-[8px] uppercase font-black" style={{ color: 'rgba(0,155,58,0.6)' }}>Duración</p>
+                </div>
+                <p className="text-sm font-bold text-white">{formatDuration(metadata.duration)}</p>
+              </motion.div>
             </div>
           </div>
 
-          {/* Info Side */}
+          {/* Main Content */}
           <div className="flex-1 flex flex-col min-w-0">
-            <div className="mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="px-3 py-1.5 rounded-full bg-ctg-red/10 text-ctg-red text-[10px] font-black uppercase tracking-widest border border-ctg-red/20">
+            {/* Header */}
+            <div className="mb-5">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider"
+                  style={{
+                    background: 'rgba(206,17,38,0.12)',
+                    color: '#ce1126',
+                    border: '1px solid rgba(206,17,38,0.25)',
+                    boxShadow: '0 0 12px rgba(206,17,38,0.1)',
+                  }}
+                >
                   {metadata.author}
                 </span>
-                <span className="px-3 py-1.5 rounded-full bg-ctg-yellow/10 text-ctg-yellow text-[10px] font-black uppercase tracking-widest border border-ctg-yellow/20">
+                <span className="px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider"
+                  style={{
+                    background: 'rgba(252,209,22,0.10)',
+                    color: '#fcd116',
+                    border: '1px solid rgba(252,209,22,0.25)',
+                    boxShadow: '0 0 12px rgba(252,209,22,0.08)',
+                  }}
+                >
                   {metadata.platform}
                 </span>
               </div>
-              <h2 className="text-2xl md:text-3xl font-black text-white leading-tight tracking-tight">
+              <h2 className="text-xl font-bold text-white truncate pr-4 leading-tight">
                 {metadata.title}
               </h2>
             </div>
 
-            <div className="bg-white/[0.02] rounded-[2rem] p-6 border border-white/5 shadow-inner">
-              <div className="flex items-center justify-between gap-4 mb-6">
-                <div className="flex gap-2 p-1.5 bg-black/40 rounded-2xl border border-white/5 backdrop-blur-xl">
-                  <button
-                    onClick={() => setTab('video')}
-                    className={cn(
-                      "px-6 py-2 rounded-xl text-[11px] font-black uppercase transition-all flex items-center gap-2.5",
-                      tab === 'video' ? "bg-ctg-red text-white shadow-[0_0_15px_rgba(206,17,38,0.3)] scale-105" : "text-white/20 hover:text-white"
-                    )}
-                  >
-                    <Film size={14} />
-                    Video
-                  </button>
-                  <button
-                    onClick={() => setTab('muted')}
-                    className={cn(
-                      "px-6 py-2 rounded-xl text-[11px] font-black uppercase transition-all flex items-center gap-2.5",
-                      tab === 'muted' ? "bg-ctg-yellow text-black shadow-[0_0_15px_rgba(252,209,22,0.3)] scale-105" : "text-white/20 hover:text-white"
-                    )}
-                  >
-                    <Film size={14} />
-                    Mudo
-                  </button>
-                  <button
-                    onClick={() => setTab('audio')}
-                    className={cn(
-                      "px-6 py-2 rounded-xl text-[11px] font-black uppercase transition-all flex items-center gap-2.5",
-                      tab === 'audio' ? "bg-ctg-green text-white shadow-[0_0_15px_rgba(0,155,58,0.3)] scale-105" : "text-white/20 hover:text-white"
-                    )}
-                  >
-                    <Music size={14} />
-                    Audio
-                  </button>
+            {/* Format Selector Panel */}
+            <div className="rounded-2xl p-4 transition-all duration-500"
+              style={{
+                background: 'rgba(0,0,0,0.5)',
+                border: `1px solid ${currentTab.color}15`,
+              }}
+            >
+              {/* Tab Switcher */}
+              <div className="flex items-center gap-4 mb-4">
+                <div className="flex gap-1 p-1 rounded-xl"
+                  style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.05)' }}
+                >
+                  {(Object.keys(tabConfig) as Array<'video' | 'muted' | 'audio'>).map((key) => {
+                    const cfg = tabConfig[key];
+                    const isActive = tab === key;
+                    const Icon = cfg.icon;
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => setTab(key)}
+                        className="relative px-4 py-2 rounded-lg text-[10px] font-black uppercase transition-all flex items-center gap-2"
+                        style={{
+                          background: isActive ? cfg.color : 'transparent',
+                          color: isActive ? (key === 'muted' ? '#000' : '#fff') : 'rgba(255,255,255,0.3)',
+                          boxShadow: isActive ? `0 0 20px ${cfg.color}40` : 'none',
+                        }}
+                      >
+                        <Icon size={12} />
+                        {cfg.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <div className="space-y-3 overflow-y-auto max-h-[320px] pr-3 custom-scrollbar">
+              {/* Format List */}
+              <div className="space-y-2 overflow-y-auto max-h-[250px] pr-2 custom-scrollbar">
                 <AnimatePresence mode="popLayout">
                   {metadata.formats
                     .filter(f => {
@@ -136,48 +200,111 @@ export const VideoCard = ({ metadata, onDownload }: VideoCardProps) => {
                       if (tab === 'muted') return f.hasVideo && !f.hasAudio;
                       return !f.hasVideo && f.hasAudio;
                     })
-                    .map((format, idx) => (
-                      <motion.button
-                        key={format.formatId}
-                        layout
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.04 }}
-                        onClick={() => onDownload(format)}
-                        className="w-full flex items-center justify-between p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.07] transition-all group active:scale-[0.98] relative overflow-hidden"
-                      >
-                        {/* Hover Gradient Accent */}
-                        <div className={cn(
-                          "absolute inset-y-0 left-0 w-1 opacity-0 group-hover:opacity-100 transition-opacity",
-                          tab === 'video' ? "bg-ctg-red" : tab === 'muted' ? "bg-ctg-yellow" : "bg-ctg-green"
-                        )} />
+                    .map((format, idx) => {
+                      const qc = tab === 'audio'
+                        ? { accent: '#009b3a', bg: 'rgba(0,155,58,0.08)', label: '♪' }
+                        : getQualityColor(format.quality);
 
-                        <div className="flex items-center gap-5">
-                          <div className={cn(
-                            "w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-500",
-                            tab === 'video' ? "bg-ctg-red/10 text-ctg-red" : 
-                            tab === 'muted' ? "bg-ctg-yellow/10 text-ctg-yellow" :
-                            "bg-ctg-green/10 text-ctg-green"
-                          )}>
-                            {(tab === 'video' || tab === 'muted') ? <Film size={20} /> : <Music size={20} />}
-                          </div>
-                          <div className="text-left">
-                            <div className="flex items-center gap-2.5">
-                              <span className="font-black text-base text-white tracking-tight">{format.quality}</span>
-                              <span className="px-1.5 py-0.5 rounded bg-white/5 text-[9px] font-black text-white/40 uppercase tracking-tighter">
-                                {format.extension}
-                              </span>
+                      return (
+                        <motion.button
+                          key={format.formatId}
+                          layout
+                          initial={{ opacity: 0, x: -16 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: idx * 0.04, type: 'spring', damping: 20 }}
+                          onClick={() => onDownload(format)}
+                          className="w-full flex items-center justify-between p-3.5 rounded-xl transition-all group active:scale-[0.98] cursor-pointer"
+                          style={{
+                            background: 'rgba(255,255,255,0.02)',
+                            borderLeft: `3px solid ${qc.accent}50`,
+                            borderTop: '1px solid rgba(255,255,255,0.04)',
+                            borderRight: '1px solid rgba(255,255,255,0.04)',
+                            borderBottom: '1px solid rgba(255,255,255,0.04)',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = `${qc.accent}10`;
+                            e.currentTarget.style.borderLeftColor = qc.accent;
+                            e.currentTarget.style.boxShadow = `inset 3px 0 12px ${qc.accent}15, 0 0 20px ${qc.accent}08`;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                            e.currentTarget.style.borderLeftColor = `${qc.accent}50`;
+                            e.currentTarget.style.boxShadow = 'none';
+                          }}
+                        >
+                          <div className="flex items-center gap-4">
+                            {/* Icon */}
+                            <div
+                              className="w-10 h-10 rounded-xl flex items-center justify-center transition-all"
+                              style={{
+                                background: qc.bg,
+                                border: `1px solid ${qc.accent}20`,
+                              }}
+                            >
+                              {(tab === 'video' || tab === 'muted')
+                                ? <Film size={18} style={{ color: qc.accent }} />
+                                : <Music size={18} style={{ color: qc.accent }} />
+                              }
                             </div>
-                            <p className="text-[10px] text-white/30 font-black uppercase tracking-widest mt-0.5">
-                              {format.filesize ? `${(format.filesize / (1024 * 1024)).toFixed(1)} MB` : 'Tamaño Dinámico'}
-                            </p>
+                            {/* Info */}
+                            <div className="text-left">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-sm text-white">{format.quality}</span>
+                                <span
+                                  className="text-[8px] uppercase font-black px-1.5 py-0.5 rounded"
+                                  style={{
+                                    background: `${qc.accent}15`,
+                                    color: qc.accent,
+                                  }}
+                                >
+                                  {format.extension}
+                                </span>
+                                {tab !== 'audio' && (
+                                  <span
+                                    className="text-[7px] uppercase font-black px-1.5 py-0.5 rounded-full"
+                                    style={{
+                                      background: `${qc.accent}10`,
+                                      color: `${qc.accent}90`,
+                                      border: `1px solid ${qc.accent}20`,
+                                    }}
+                                  >
+                                    {qc.label}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[9px] text-white/30 font-bold uppercase mt-0.5">
+                                {format.filesize ? `${(format.filesize / (1024 * 1024)).toFixed(1)} MB` : 'Tamaño dinámico'}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center border border-white/10 group-hover:bg-white group-hover:border-white transition-all duration-300 shadow-xl group-hover:scale-110">
-                          <Download size={16} className="text-white/40 group-hover:text-black" />
-                        </div>
-                      </motion.button>
-                    ))}
+
+                          {/* Download Button */}
+                          <div
+                            className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300"
+                            style={{
+                              border: `1.5px solid ${qc.accent}30`,
+                              background: 'transparent',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = qc.accent;
+                              e.currentTarget.style.borderColor = qc.accent;
+                              e.currentTarget.style.boxShadow = `0 0 16px ${qc.accent}50`;
+                              const icon = e.currentTarget.querySelector('svg');
+                              if (icon) (icon as SVGSVGElement).style.color = '#000';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = 'transparent';
+                              e.currentTarget.style.borderColor = `${qc.accent}30`;
+                              e.currentTarget.style.boxShadow = 'none';
+                              const icon = e.currentTarget.querySelector('svg');
+                              if (icon) (icon as SVGSVGElement).style.color = `${qc.accent}`;
+                            }}
+                          >
+                            <Download size={14} style={{ color: qc.accent, transition: 'color 0.3s' }} />
+                          </div>
+                        </motion.button>
+                      );
+                    })}
                 </AnimatePresence>
               </div>
             </div>

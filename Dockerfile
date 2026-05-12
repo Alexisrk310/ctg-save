@@ -1,3 +1,6 @@
+# ============================================
+# Stage 1: Base — system dependencies
+# ============================================
 FROM node:20-slim AS base
 
 # Install system dependencies (yt-dlp and ffmpeg)
@@ -20,22 +23,49 @@ ENV PATH="$DENO_INSTALL/bin:$PATH"
 
 WORKDIR /app
 
-# Install dependencies in base stage for dev use
+# ============================================
+# Stage 2: Dependencies — install node_modules
+# ============================================
+FROM base AS deps
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
-# Build stage
+# ============================================
+# Stage 3: Builder — build the Next.js app
+# ============================================
 FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-# Final runtime stage
+# ============================================
+# Stage 4: Runner — minimal production image
+# ============================================
 FROM base AS runner
 WORKDIR /app
-COPY --from=builder /app/.next ./.next
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV HOSTNAME="0.0.0.0"
+ENV PORT=3000
+
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy standalone output (includes server.js + minimal node_modules)
+COPY --from=builder /app/.next/standalone ./
+# Copy static assets
+COPY --from=builder /app/.next/static ./.next/static
+# Copy public assets
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/next.config.ts ./
+
+# Set ownership
+RUN chown -R nextjs:nodejs /app
+
+USER nextjs
 
 EXPOSE 3000
-CMD ["npm", "start"]
+
+CMD ["node", "server.js"]
