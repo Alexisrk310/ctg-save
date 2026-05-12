@@ -24,7 +24,9 @@ export async function GET(req: NextRequest) {
       ];
       
       const fs = require('fs');
-      if (fs.existsSync('./cookies.txt')) {
+      if (fs.existsSync('/etc/secrets/cookies.txt')) {
+        ytArgs.push('--cookies', '/etc/secrets/cookies.txt');
+      } else if (fs.existsSync('./cookies.txt')) {
         ytArgs.push('--cookies', './cookies.txt');
       }
       

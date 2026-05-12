@@ -23,7 +23,9 @@ export class VideoService {
         ],
       };
 
-      if (fs.existsSync('./cookies.txt')) {
+      if (fs.existsSync('/etc/secrets/cookies.txt')) {
+        options.cookies = '/etc/secrets/cookies.txt';
+      } else if (fs.existsSync('./cookies.txt')) {
         options.cookies = './cookies.txt';
       }
 
