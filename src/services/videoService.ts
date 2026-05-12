@@ -24,7 +24,9 @@ export class VideoService {
       };
 
       if (fs.existsSync('/etc/secrets/cookies.txt')) {
-        options.cookies = '/etc/secrets/cookies.txt';
+        // Copy to a writable location because yt-dlp tries to update the cookies file
+        fs.copyFileSync('/etc/secrets/cookies.txt', '/tmp/cookies.txt');
+        options.cookies = '/tmp/cookies.txt';
       } else if (fs.existsSync('./cookies.txt')) {
         options.cookies = './cookies.txt';
       }

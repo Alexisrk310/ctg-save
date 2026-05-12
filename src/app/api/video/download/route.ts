@@ -25,7 +25,8 @@ export async function GET(req: NextRequest) {
       
       const fs = require('fs');
       if (fs.existsSync('/etc/secrets/cookies.txt')) {
-        ytArgs.push('--cookies', '/etc/secrets/cookies.txt');
+        fs.copyFileSync('/etc/secrets/cookies.txt', '/tmp/cookies.txt');
+        ytArgs.push('--cookies', '/tmp/cookies.txt');
       } else if (fs.existsSync('./cookies.txt')) {
         ytArgs.push('--cookies', './cookies.txt');
       }
