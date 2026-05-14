@@ -75,22 +75,35 @@ export class YouTubeService {
       ...(streaming.adaptive_formats || []),
     ];
 
+    // Resolve actual playable URLs (some require deciphering)
+    const player = (yt as any).session?.player;
+
     const formats: VideoFormat[] = allFormats.map((f: any) => {
       const hasVideo = !!f.width || (f.mime_type || '').startsWith('video/');
       const hasAudio = (f.mime_type || '').startsWith('audio/') || !!f.audio_quality;
       const isAudioOnly = hasAudio && !hasVideo;
+
+      let resolvedUrl: string | undefined = f.url;
+      try {
+        if (!resolvedUrl && typeof f.decipher === 'function' && player) {
+          resolvedUrl = f.decipher(player);
+        }
+      } catch {
+        // ignore — some formats can't be deciphered without po_token
+      }
+
       return {
         formatId: String(f.itag),
         extension: ((f.mime_type || '').match(/\/(\w+)/)?.[1]) || 'mp4',
         quality: qualityLabel(f.itag, f.height, f.fps, isAudioOnly),
-        url: f.url,
+        url: resolvedUrl,
         filesize: f.content_length ? Number(f.content_length) : undefined,
         width: f.width,
         height: f.height,
         hasVideo,
-        hasAudio: hasAudio || (hasVideo && !f.has_audio === false),
+        hasAudio,
       };
-    });
+    }).filter(f => !!f.url); // drop formats without playable URL
 
     // Sort: video first, by height desc; then audio
     formats.sort((a, b) => {

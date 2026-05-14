@@ -17,15 +17,20 @@ export async function POST(req: NextRequest) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: 'El enlace proporcionado no es una URL válida.' }, { status: 400 });
     }
-    
+
+    // Log full error to server for diagnostics
+    console.error('[api/video/info] error:', error?.stack || error?.message || error);
+
+    const message: string = error?.message || 'Error interno del servidor';
+
     // Distinguish between user errors and internal errors
-    const isUserError = error.message.includes('enlace') || 
-                       error.message.includes('encontrado') || 
-                       error.message.includes('válido') ||
-                       error.message.includes('restricción');
+    const isUserError = message.includes('enlace') ||
+                       message.includes('encontrado') ||
+                       message.includes('válido') ||
+                       message.includes('restricción');
 
     return NextResponse.json(
-      { error: error.message || 'Error interno del servidor' }, 
+      { error: message, detail: process.env.NODE_ENV !== 'production' ? error?.stack : undefined },
       { status: isUserError ? 400 : 500 }
     );
   }
