@@ -21,6 +21,8 @@ export async function GET(req: NextRequest) {
         '--audio-quality', '0',
         '--no-playlist',
         '--no-warnings',
+        '--extractor-args', 'youtube:player_client=tv,ios,web_safari;formats=missing_pot',
+        '--user-agent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',
       ];
       
       const fs = require('fs');

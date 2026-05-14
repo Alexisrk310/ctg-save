@@ -17,6 +17,11 @@ export class VideoService {
         dumpSingleJson: true,
         noCheckCertificates: true,
         noWarnings: true,
+        // Use alternate YouTube player clients to bypass bot detection.
+        // 'tv' and 'ios' clients are less aggressively gated than 'web'.
+        extractorArgs: 'youtube:player_client=tv,ios,web_safari;formats=missing_pot',
+        userAgent:
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',
       };
 
       if (fs.existsSync('/etc/secrets/cookies.txt')) {
@@ -96,6 +101,9 @@ export class VideoService {
       }
       if (message.includes('Sign in to confirm your age')) {
         throw new Error('Este video requiere inicio de sesión (restricción de edad) y no puede ser descargado.');
+      }
+      if (message.includes("Sign in to confirm you") || message.includes('not a bot') || message.includes('bot')) {
+        throw new Error('YouTube está bloqueando temporalmente las descargas desde este servidor. Intenta de nuevo más tarde o actualiza el archivo cookies.txt.');
       }
       
       throw new Error('No se pudo obtener la información del video. Inténtalo de nuevo más tarde.');
