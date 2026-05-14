@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import { spawn } from 'child_process';
+import { YouTubeService, extractYouTubeId } from '@/services/youtubeService';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -12,17 +13,52 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing URL' }, { status: 400 });
   }
 
+  const isYouTube = !!extractYouTubeId(url);
+
   if (isMp3) {
     try {
-      // Stream directly from yt-dlp for MP3 conversion
+      // For YouTube: pull audio from youtubei.js and pipe through ffmpeg
+      if (isYouTube) {
+        const audioStream = await YouTubeService.getAudioStream(url);
+        const ffArgs = [
+          '-i', 'pipe:0',
+          '-vn',
+          '-acodec', 'libmp3lame',
+          '-q:a', '0',
+          '-f', 'mp3',
+          'pipe:1',
+        ];
+        const ff = spawn('ffmpeg', ffArgs);
+        audioStream.pipe(ff.stdin);
+        audioStream.on('error', (e) => console.error('audio stream error', e));
+        ff.stderr.on('data', () => {}); // silence ffmpeg logs
+
+        const stream = new ReadableStream({
+          start(controller) {
+            ff.stdout.on('data', (chunk) => controller.enqueue(chunk));
+            ff.stdout.on('end', () => controller.close());
+            ff.stdout.on('error', (err) => controller.error(err));
+          },
+          cancel() {
+            ff.kill();
+          },
+        });
+
+        return new NextResponse(stream, {
+          headers: {
+            'Content-Type': 'audio/mpeg',
+            'Content-Disposition': `attachment; filename="${encodeURIComponent(filename)}"`,
+          },
+        });
+      }
+
+      // Other platforms: keep yt-dlp pipeline
       const ytArgs = [
         '-x',
         '--audio-format', 'mp3',
         '--audio-quality', '0',
         '--no-playlist',
         '--no-warnings',
-        '--extractor-args', 'youtube:player_client=tv,ios,web_safari;formats=missing_pot',
-        '--user-agent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1',
       ];
       
       const fs = require('fs');

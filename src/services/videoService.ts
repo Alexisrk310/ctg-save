@@ -1,6 +1,7 @@
 import { create as createYoutubeDl } from 'youtube-dl-exec';
 import { VideoMetadata, VideoFormat } from '@/types/video';
 import { detectPlatform } from '@/utils/platform';
+import { YouTubeService } from './youtubeService';
 import fs from 'fs';
 
 const BINARY_PATH = '/usr/local/bin/yt-dlp';
@@ -10,9 +11,19 @@ const youtubedl = fs.existsSync(BINARY_PATH)
 
 export class VideoService {
   static async getInfo(url: string): Promise<VideoMetadata> {
+    const platform = detectPlatform(url);
+
+    // YouTube: use youtubei.js (InnerTube) — no cookies, no bot-check.
+    if (platform === 'youtube') {
+      try {
+        return await YouTubeService.getInfo(url);
+      } catch (err: any) {
+        console.error('YouTubeService failed, falling back to yt-dlp:', err?.message || err);
+        // fall through to yt-dlp fallback below
+      }
+    }
+
     try {
-      const platform = detectPlatform(url);
-      
       const options: any = {
         dumpSingleJson: true,
         noCheckCertificates: true,
